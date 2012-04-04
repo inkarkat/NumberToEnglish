@@ -212,11 +212,8 @@ endfunction
 " Converts the given integer (negatives are allowed) to its English
 " equivalent; for example, numberToEnglish( -234 ) returns "negative
 " two hundred thirty four".
-function! NumberToEnglish( num, ... )
+function! Render( num, isCapitalize, isOrdinal )
   let theNum     = a:num
-  let capitalize = a:0 && a:1
-  let isOrdinal = a:0 > 1 && a:2
-
   let result = ""
 
   if ( theNum == 0 )
@@ -241,9 +238,9 @@ function! NumberToEnglish( num, ... )
 
       " Skip any empty portions, such as for 1000 or 1000234.
       if ( triplet > 0 )
-        let tripletToEnglish = SmallNumberToEnglish( triplet, theNum == 0, ( isOrdinal && i == 0 ) )
+        let tripletToEnglish = SmallNumberToEnglish( triplet, theNum == 0, ( a:isOrdinal && i == 0 ) )
 
-        let scale = <SID>GetList( "scale", (result == '' && isOrdinal ) )[ i ]
+        let scale = <SID>GetList( "scale", (result == '' && a:isOrdinal ) )[ i ]
         if ( scale != '' )
           let tripletToEnglish .= " " . scale
         endif
@@ -259,9 +256,22 @@ function! NumberToEnglish( num, ... )
     endif
   endif
 
-  if ( capitalize )
+  if ( a:isCapitalize )
     let result = toupper( result[ 0 ] ) . substitute( result, '.', '', '' )
   endif
 
   return result
+endfunction
+
+" Converts the given integer (negatives are allowed) to its English
+" equivalent; for example, NumberToEnglish( -234 ) returns "negative
+" two hundred thirty four".
+function! NumberToEnglish( num, ... )
+  return Render( a:num, a:0 && a:1, 0 )
+endfunction
+
+" Converts the given integer to its English ordinal; for example,
+" OrdinalToEnglish( 234 ) returns "two hundred thirty fourth".
+function! OrdinalToEnglish( num, ... )
+  return Render( a:num, a:0 && a:1, 1 )
 endfunction
