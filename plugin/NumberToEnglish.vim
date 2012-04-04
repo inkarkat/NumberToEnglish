@@ -90,7 +90,11 @@ if ( !exists( "g:numberToEnglish_and" ) )
 endif
 
 if ( !exists( "g:numberToEnglish_useAnd" ) )
-  let g:numberToEnglish_useAnd = 0
+  let g:numberToEnglish_useAnd = 1
+endif
+
+if ( !exists( "g:numberToEnglish_useHyphen" ) )
+  let g:numberToEnglish_useHyphen = 1
 endif
 
 " Mappings
@@ -124,6 +128,10 @@ endfunction
 
 function! <SID>GetAndSeparator()
   return GetVar#GetVar( "numberToEnglish_useAnd" ) ? " " . GetVar#GetVar( "numberToEnglish_and" ) . " " : " "
+endfunction
+
+function! <SID>GetHyphenSeparator()
+  return GetVar#GetVar( "numberToEnglish_useHyphen" ) ? "-" : " "
 endfunction
 
 " Converts a number between 1 and 999 to its English equivalent.
@@ -169,7 +177,7 @@ function! SmallNumberToEnglish( num, standalone )
         let result = <SID>AddWithSpace( result, tensList[ digit ], <SID>GetAndSeparator() )
 
         if ( theNum > 0 )
-          let result = <SID>AddWithSpace( result, digitsList[ theNum ] )
+          let result = <SID>AddWithSpace( result, digitsList[ theNum ], <SID>GetHyphenSeparator() )
         endif
       endif
     endif
