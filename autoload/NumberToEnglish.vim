@@ -40,13 +40,13 @@ endfunction
 "
 " If standalone is 1, assumes that numbers such as 23 should be returned as "twenty three"; otherwise, 23 gets returned as "and twenty three", if
 " g:numberToEnglish_useAnd is set.
-function! <SID>SmallNumberToEnglish( num, standalone, isOrdinal )
+function! <SID>SmallNumberToEnglish( num, standalone, round, isOrdinal )
   " We ignore the 0-based position so we don't have to keep
   " subtracting from our results when we look a number up here.
   let theNum = a:num
 
   " If not standalone, we start with a space to allow for "and" and separators to come into play--we'll trim that out at the end.
-  let result = GetVar#GetVar( "numberToEnglish_useAnd" ) && !a:standalone ? " " : ""
+  let result = GetVar#GetVar( "numberToEnglish_useAnd" ) && a:round == 0 && !a:standalone ? " " : ""
 
   if ( theNum >= 1 || theNum < 1000 )
     let digitsList = <SID>GetList( "digits", a:isOrdinal )
@@ -117,7 +117,7 @@ function! <SID>Render( num, isCapitalize, isOrdinal )
 
       " Skip any empty portions, such as for 1000 or 1000234.
       if ( triplet > 0 )
-        let tripletToEnglish = <SID>SmallNumberToEnglish( triplet, theNum == 0, ( a:isOrdinal && i == 0 ) )
+        let tripletToEnglish = <SID>SmallNumberToEnglish( triplet, theNum == 0, i, ( a:isOrdinal && i == 0 ) )
 
         let scale = <SID>GetList( "scale", (result == '' && a:isOrdinal ) )[ i ]
         if ( scale != '' )
