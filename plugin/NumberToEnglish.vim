@@ -68,21 +68,36 @@
 if ( !exists( "g:numberToEnglish_digits" ) )
   let g:numberToEnglish_digits = [ "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" ]
 endif
+if ( !exists( "g:numberToEnglish_ordinal_digits" ) )
+  let g:numberToEnglish_ordinal_digits = [ "", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth" ]
+endif
 
 if ( !exists( "g:numberToEnglish_teens" ) )
   let g:numberToEnglish_teens = [ "", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen" ]
+endif
+if ( !exists( "g:numberToEnglish_ordinal_teens" ) )
+  let g:numberToEnglish_ordinal_teens = [ "", "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth" ]
 endif
 
 if ( !exists( "g:numberToEnglish_tens" ) )
   let g:numberToEnglish_tens = [ "", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety" ]
 endif
+if ( !exists( "g:numberToEnglish_ordinal_tens" ) )
+  let g:numberToEnglish_ordinal_tens = [ "", "tenth", "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth", "eightieth", "ninetieth" ]
+endif
 
 if ( !exists( "g:numberToEnglish_scale" ) )
   let g:numberToEnglish_scale = [ "", "thousand", "million", "billion" ]
 endif
+if ( !exists( "g:numberToEnglish_ordinal_scale" ) )
+  let g:numberToEnglish_ordinal_scale = [ "", "thousandth", "millionth", "billionth" ]
+endif
 
 if ( !exists( "g:numberToEnglish_hundred" ) )
   let g:numberToEnglish_hundred = "hundred"
+endif
+if ( !exists( "g:numberToEnglish_ordinal_hundred" ) )
+  let g:numberToEnglish_ordinal_hundred = "hundredth"
 endif
 
 if ( !exists( "g:numberToEnglish_and" ) )
@@ -95,6 +110,10 @@ endif
 
 if ( !exists( "g:numberToEnglish_useHyphen" ) )
   let g:numberToEnglish_useHyphen = 1
+endif
+
+if ( !exists( "g:numberToEnglish_negative" ) )
+  let g:numberToEnglish_negative = "negative"
 endif
 
 " Mappings
@@ -134,12 +153,15 @@ function! <SID>GetHyphenSeparator()
   return GetVar#GetVar( "numberToEnglish_useHyphen" ) ? "-" : " "
 endfunction
 
+function! <SID>GetList( name, isOrdinal )
+  return GetVar#GetVar( "numberToEnglish_" . (a:isOrdinal ? "ordinal_" : "") . a:name )
+endfunction
 " Converts a number between 1 and 999 to its English equivalent.
 " Anything else (such as 0 or 1000) gets the empty string.
 "
 " If standalone is 1, assumes that numbers such as 23 should be returned as "twenty three"; otherwise, 23 gets returned as "and twenty three", if
 " g:numberToEnglish_useAnd is set.
-function! SmallNumberToEnglish( num, standalone )
+function! SmallNumberToEnglish( num, standalone, isOrdinal )
   " We ignore the 0-based position so we don't have to keep
   " subtracting from our results when we look a number up here.
   let theNum = a:num
@@ -148,17 +170,16 @@ function! SmallNumberToEnglish( num, standalone )
   let result = GetVar#GetVar( "numberToEnglish_useAnd" ) && !a:standalone ? " " : ""
 
   if ( theNum >= 1 || theNum < 1000 )
-    let digitsList = GetVar#GetVar( "numberToEnglish_digits" )
-    let teensList  = GetVar#GetVar( "numberToEnglish_teens" )
-    let tensList   = GetVar#GetVar( "numberToEnglish_tens" )
+    let digitsList = <SID>GetList( "digits", a:isOrdinal )
+    let teensList  = <SID>GetList( "teens", a:isOrdinal )
+    let tensList   = <SID>GetList( "tens", a:isOrdinal )
 
     let digit = theNum / 100
+    let theNum = theNum % 100
 
     if ( digit > 0 )
-      let result = <SID>AddWithSpace( result, digitsList[ digit ] . " " . GetVar#GetVar( "numberToEnglish_hundred" ) )
+      let result = <SID>AddWithSpace( result, <SID>GetList( "digits", 0 )[ digit ] . " " . <SID>GetList( "hundred", a:isOrdinal && theNum == 0 ) )
     endif
-
-    let theNum = theNum % 100
 
     " We can skip the whole thing if the number passed in is an
     " even multiple of a hundred, such as 500.
@@ -174,10 +195,11 @@ function! SmallNumberToEnglish( num, standalone )
         let digit = theNum / 10
         let theNum = theNum % 10
 
-        let result = <SID>AddWithSpace( result, tensList[ digit ], <SID>GetAndSeparator() )
-
         if ( theNum > 0 )
+          let result = <SID>AddWithSpace( result, <SID>GetList( "tens", 0 )[ digit ], <SID>GetAndSeparator() )
           let result = <SID>AddWithSpace( result, digitsList[ theNum ], <SID>GetHyphenSeparator() )
+        else
+          let result = <SID>AddWithSpace( result, tensList[ digit ], <SID>GetAndSeparator() )
         endif
       endif
     endif
@@ -192,7 +214,8 @@ endfunction
 " two hundred thirty four".
 function! NumberToEnglish( num, ... )
   let theNum     = a:num
-  let capitalize = exists( "a:1" ) && a:1
+  let capitalize = a:0 && a:1
+  let isOrdinal = a:0 > 1 && a:2
 
   let result = ""
 
@@ -205,8 +228,6 @@ function! NumberToEnglish( num, ... )
       let theNum = abs( theNum )
     endif
 
-    let scaleList = GetVar#GetVar( "numberToEnglish_scale" )
-
     " Starting from the right, take at most three digits from the
     " number and process those; the first time around, we leave
     " them as is.  The second time, we put the word "thousand"
@@ -214,26 +235,27 @@ function! NumberToEnglish( num, ... )
     " If someone wants billions, the process just gets repeated one
     " more time.
     let i = 0
-    while ( i < len( scaleList ) )
+    while ( i < len( <SID>GetList( "scale", 0 ) ) )
       let triplet = theNum % 1000
       let theNum  = theNum / 1000
 
       " Skip any empty portions, such as for 1000 or 1000234.
       if ( triplet > 0 )
-        let tripletToEnglish = SmallNumberToEnglish( triplet, theNum == 0 )
+        let tripletToEnglish = SmallNumberToEnglish( triplet, theNum == 0, ( isOrdinal && i == 0 ) )
 
-        if ( scaleList[ i ] != '' )
-          let tripletToEnglish .= " " . scaleList[ i ]
+        let scale = <SID>GetList( "scale", (result == '' && isOrdinal ) )[ i ]
+        if ( scale != '' )
+          let tripletToEnglish .= " " . scale
         endif
 
-        let result = <SID>AddWithSpace( tripletToEnglish, result, ", " )
+        let result = <SID>AddWithSpace( tripletToEnglish, result, ( stridx(result, GetVar#GetVar( "numberToEnglish_and" ) ) == 0 ? " " : ", " ) )
       endif
 
       let i += 1
     endwhile
 
     if ( isNegative )
-      let result = "negative " . result
+      let result = GetVar#GetVar( "numberToEnglish_negative" ) . " " . result
     endif
   endif
 
