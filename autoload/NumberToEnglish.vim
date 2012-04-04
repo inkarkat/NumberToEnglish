@@ -91,7 +91,7 @@ endfunction
 " Converts the given integer (negatives are allowed) to its English
 " equivalent; for example, numberToEnglish( -234 ) returns "negative
 " two hundred thirty four".
-function! NumberToEnglish#Render( num, isCapitalize, isOrdinal )
+function! <SID>Render( num, isCapitalize, isOrdinal )
   let theNum     = a:num
   let result = ""
 
@@ -140,4 +140,17 @@ function! NumberToEnglish#Render( num, isCapitalize, isOrdinal )
   endif
 
   return result
+endfunction
+
+" Converts the given integer (negatives are allowed) to its English equivalent;
+" for example, NumberToEnglish#Cardinal( -234 ) returns "negative two hundred
+" thirty four".
+function! NumberToEnglish#Cardinal( num, ... )
+  return <SID>Render( a:num, a:0 && a:1, 0 )
+endfunction
+
+" Converts the given integer to its English ordinal; for example,
+" NumberToEnglish#Ordinal( 234 ) returns "two hundred thirty fourth".
+function! NumberToEnglish#Ordinal( num, ... )
+  return <SID>Render( a:num, a:0 && a:1, 1 )
 endfunction

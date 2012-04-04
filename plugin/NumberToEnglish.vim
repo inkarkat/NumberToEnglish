@@ -136,25 +136,12 @@ if ( !exists( "g:numberToEnglish_negative" ) )
 endif
 
 " Mappings
-imap <Plug>NumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*' )<cr>
-imap <Plug>DNumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*' )<cr> (<c-r>*)
-imap <Plug>CNumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*', 1 )<cr>
-imap <Plug>DCNumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*', 1 )<cr> (<c-r>*)
+imap <Plug>NumberToEnglish <c-o>diw<c-r>=NumberToEnglish#Cardinal( '<c-r>*' )<cr>
+imap <Plug>DNumberToEnglish <c-o>diw<c-r>=NumberToEnglish#Cardinal( '<c-r>*' )<cr> (<c-r>*)
+imap <Plug>CNumberToEnglish <c-o>diw<c-r>=NumberToEnglish#Cardinal( '<c-r>*', 1 )<cr>
+imap <Plug>DCNumberToEnglish <c-o>diw<c-r>=NumberToEnglish#Cardinal( '<c-r>*', 1 )<cr> (<c-r>*)
 
-imap <Plug>OrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*' )<cr>
-imap <Plug>DOrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*' )<cr> (<c-r>*)
-imap <Plug>COrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*', 1 )<cr>
-imap <Plug>DCOrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*', 1 )<cr> (<c-r>*)
-
-" Converts the given integer (negatives are allowed) to its English
-" equivalent; for example, NumberToEnglish( -234 ) returns "negative
-" two hundred thirty four".
-function! NumberToEnglish( num, ... )
-  return NumberToEnglish#Render( a:num, a:0 && a:1, 0 )
-endfunction
-
-" Converts the given integer to its English ordinal; for example,
-" OrdinalToEnglish( 234 ) returns "two hundred thirty fourth".
-function! OrdinalToEnglish( num, ... )
-  return NumberToEnglish#Render( a:num, a:0 && a:1, 1 )
-endfunction
+imap <Plug>OrdinalToEnglish <c-o>diw<c-r>=NumberToEnglish#Ordinal( '<c-r>*' )<cr>
+imap <Plug>DOrdinalToEnglish <c-o>diw<c-r>=NumberToEnglish#Ordinal( '<c-r>*' )<cr> (<c-r>*)
+imap <Plug>COrdinalToEnglish <c-o>diw<c-r>=NumberToEnglish#Ordinal( '<c-r>*', 1 )<cr>
+imap <Plug>DCOrdinalToEnglish <c-o>diw<c-r>=NumberToEnglish#Ordinal( '<c-r>*', 1 )<cr> (<c-r>*)
