@@ -123,7 +123,7 @@ function! <SID>AddWithSpace( original, addition, ... )
 endfunction
 
 function! <SID>GetAndSeparator()
-  return GetVar( "numberToEnglish_useAnd" ) ? " " . GetVar( "numberToEnglish_and" ) . " " : " "
+  return GetVar#GetVar( "numberToEnglish_useAnd" ) ? " " . GetVar#GetVar( "numberToEnglish_and" ) . " " : " "
 endfunction
 
 " Converts a number between 1 and 999 to its English equivalent.
@@ -137,17 +137,17 @@ function! SmallNumberToEnglish( num, standalone )
   let theNum = a:num
 
   " If not standalone, we start with a space to allow for "and" and separators to come into play--we'll trim that out at the end.
-  let result = GetVar( "numberToEnglish_useAnd" ) && !a:standalone ? " " : ""
+  let result = GetVar#GetVar( "numberToEnglish_useAnd" ) && !a:standalone ? " " : ""
 
   if ( theNum >= 1 || theNum < 1000 )
-    let digitsList = GetVar( "numberToEnglish_digits" )
-    let teensList  = GetVar( "numberToEnglish_teens" )
-    let tensList   = GetVar( "numberToEnglish_tens" )
+    let digitsList = GetVar#GetVar( "numberToEnglish_digits" )
+    let teensList  = GetVar#GetVar( "numberToEnglish_teens" )
+    let tensList   = GetVar#GetVar( "numberToEnglish_tens" )
 
     let digit = theNum / 100
 
     if ( digit > 0 )
-      let result = <SID>AddWithSpace( result, digitsList[ digit ] . " " . GetVar( "numberToEnglish_hundred" ) )
+      let result = <SID>AddWithSpace( result, digitsList[ digit ] . " " . GetVar#GetVar( "numberToEnglish_hundred" ) )
     endif
 
     let theNum = theNum % 100
@@ -197,7 +197,7 @@ function! NumberToEnglish( num, ... )
       let theNum = abs( theNum )
     endif
 
-    let scaleList = GetVar( "numberToEnglish_scale" )
+    let scaleList = GetVar#GetVar( "numberToEnglish_scale" )
 
     " Starting from the right, take at most three digits from the
     " number and process those; the first time around, we leave
