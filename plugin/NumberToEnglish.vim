@@ -100,6 +100,13 @@ if ( !exists( "g:numberToEnglish_ordinal_hundred" ) )
   let g:numberToEnglish_ordinal_hundred = "hundredth"
 endif
 
+if ( !exists( "g:numberToEnglish_zero" ) )
+  let g:numberToEnglish_zero = "zero"
+endif
+if ( !exists( "g:numberToEnglish_ordinal_zero" ) )
+  let g:numberToEnglish_ordinal_zero = "zeroth"
+endif
+
 if ( !exists( "g:numberToEnglish_and" ) )
   let g:numberToEnglish_and = "and"
 endif
@@ -121,6 +128,11 @@ imap <Plug>NumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*' )<cr>
 imap <Plug>DNumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*' )<cr> (<c-r>*)
 imap <Plug>CNumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*', 1 )<cr>
 imap <Plug>DCNumberToEnglish <c-o>diw<c-r>=NumberToEnglish( '<c-r>*', 1 )<cr> (<c-r>*)
+
+imap <Plug>OrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*' )<cr>
+imap <Plug>DOrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*' )<cr> (<c-r>*)
+imap <Plug>COrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*', 1 )<cr>
+imap <Plug>DCOrdinalToEnglish <c-o>diw<c-r>=OrdinalToEnglish( '<c-r>*', 1 )<cr> (<c-r>*)
 
 " Concatenates two strings, placing a space between them if neither is
 " empty; if either is empty, the result is simply the non-empty one; if
@@ -161,7 +173,7 @@ endfunction
 "
 " If standalone is 1, assumes that numbers such as 23 should be returned as "twenty three"; otherwise, 23 gets returned as "and twenty three", if
 " g:numberToEnglish_useAnd is set.
-function! SmallNumberToEnglish( num, standalone, isOrdinal )
+function! <SID>SmallNumberToEnglish( num, standalone, isOrdinal )
   " We ignore the 0-based position so we don't have to keep
   " subtracting from our results when we look a number up here.
   let theNum = a:num
@@ -212,12 +224,12 @@ endfunction
 " Converts the given integer (negatives are allowed) to its English
 " equivalent; for example, numberToEnglish( -234 ) returns "negative
 " two hundred thirty four".
-function! Render( num, isCapitalize, isOrdinal )
+function! <SID>Render( num, isCapitalize, isOrdinal )
   let theNum     = a:num
   let result = ""
 
   if ( theNum == 0 )
-    let result = "zero"
+    let result = <SID>GetList( "zero", a:isOrdinal )
   else
     let isNegative = theNum < 0
 
@@ -238,7 +250,7 @@ function! Render( num, isCapitalize, isOrdinal )
 
       " Skip any empty portions, such as for 1000 or 1000234.
       if ( triplet > 0 )
-        let tripletToEnglish = SmallNumberToEnglish( triplet, theNum == 0, ( a:isOrdinal && i == 0 ) )
+        let tripletToEnglish = <SID>SmallNumberToEnglish( triplet, theNum == 0, ( a:isOrdinal && i == 0 ) )
 
         let scale = <SID>GetList( "scale", (result == '' && a:isOrdinal ) )[ i ]
         if ( scale != '' )
@@ -267,11 +279,11 @@ endfunction
 " equivalent; for example, NumberToEnglish( -234 ) returns "negative
 " two hundred thirty four".
 function! NumberToEnglish( num, ... )
-  return Render( a:num, a:0 && a:1, 0 )
+  return <SID>Render( a:num, a:0 && a:1, 0 )
 endfunction
 
 " Converts the given integer to its English ordinal; for example,
 " OrdinalToEnglish( 234 ) returns "two hundred thirty fourth".
 function! OrdinalToEnglish( num, ... )
-  return Render( a:num, a:0 && a:1, 1 )
+  return <SID>Render( a:num, a:0 && a:1, 1 )
 endfunction
